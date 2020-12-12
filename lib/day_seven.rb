@@ -1,61 +1,45 @@
-class Bag
-  def initialize(color, inner_bags)
-    @color = color
-    @inner_bags = inner_bags
-  end
-
-  def color
-    color
-  end
-
-  def inner_bags
-    @inner_bags
-  end
-end
-
 class BagFactory
   def initialize(rules)
     @requirements_per_color = Hash.new
-    @requirements = []
+    @wrappers_per_color = Hash.new()
 
     rules.each do |rule|
       @requirements_per_color.store(rule[:color], rule[:inner_contents])
-      @requirements.push(rule)
     end
+
+    
+    rules.each do |rule|
+      inner_colors = rule[:inner_contents].to_set
+      
+      inner_colors.each do |color|
+        wrappers = @wrappers_per_color.key?(color) ? @wrappers_per_color[color] : Set.new
+        wrappers.add(rule[:color])
+        @wrappers_per_color.store(color, wrappers)
+      end
+    end
+
   end
 
-  def bag(color)
-    requirements = @requirements_per_color[color]
-
-    if (requirements.count.eql?(0)) 
-      return Bag.new(color, [])
+  def get_wrapping_bag_colors(search_color)
+    has_wrappers =  @wrappers_per_color.key?(search_color)
+    if (!has_wrappers)
+      return []
     end
 
-    inner_contents = requirements.map do |r|
-      self.bag(r)
-    end
-
-    Bag.new(color, inner_contents)
+    wrappers = @wrappers_per_color[search_color]
+    wrappers.to_a.reduce(Array.new) do |acc, wrapping_color|
+      acc.concat(self.get_wrapping_bag_colors(wrapping_color).to_a)
+      acc
+    end.concat(wrappers.to_a).to_set
   end
 
-  def get_nested_wrappers_for(color)
-    wrappers = self.get_wrappers_for(color)
-
-    outer_wrappers = wrappers.map do |wrapper|
-      self.get_wrappers_for(wrapper[:color])
-    end.flatten
-
-    all_wrappers = Array.new(wrappers).concat(outer_wrappers)
-
-    all_wrappers.map {|w| w[:color]}.to_set
-  end
-
-  private 
-  
-  def get_wrappers_for(color)
-    @requirements.select do |r|
-      r[:inner_contents].include?(color)
+  def number_of_bag_tickets(bag_color)
+    requirements = @requirements_per_color[bag_color]
+    if (requirements.eql?([]))
+      return 1
     end
+
+    requirements.sum{|r| self.number_of_bag_tickets(r) } + 1
   end
 end
 
