@@ -7,7 +7,6 @@ class BagFactory
       @requirements_per_color.store(rule[:color], rule[:inner_contents])
     end
 
-    
     rules.each do |rule|
       inner_colors = rule[:inner_contents].to_set
       
@@ -21,16 +20,14 @@ class BagFactory
   end
 
   def get_wrapping_bag_colors(search_color)
-    has_wrappers =  @wrappers_per_color.key?(search_color)
-    if (!has_wrappers)
+    wrappers = @wrappers_per_color[search_color]
+    if (wrappers == nil)
       return []
     end
 
-    wrappers = @wrappers_per_color[search_color]
-    wrappers.to_a.reduce(Array.new) do |acc, wrapping_color|
-      acc.concat(self.get_wrapping_bag_colors(wrapping_color).to_a)
-      acc
-    end.concat(wrappers.to_a).to_set
+    wrappers.reduce(Set.new) do |acc, wrapping_color|
+      acc.merge(self.get_wrapping_bag_colors(wrapping_color))
+    end.merge(wrappers.to_a)
   end
 
   def number_of_bag_tickets(bag_color)

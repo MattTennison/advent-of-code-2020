@@ -48,7 +48,6 @@ class PassportControl
   end
 
   def count_valid_passports
-    puts @passports.count
     @passports.count{|passport| passport.is_valid?}
   end
 end
