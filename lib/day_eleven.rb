@@ -14,19 +14,18 @@ class Ferry
     end
   end
 
-  def iterate
-
+  def iterate(seat_finding_strategy)
     @seats = @seats.map do |row|
-      row.map { |s| s.iterate(self) }
+      row.map { |s| s.iterate(self, seat_finding_strategy) }
     end
   end
 
-  def stabilise
+  def stabilise(seat_finding_strategy)
     has_stabilised = false
     
     while (!has_stabilised)
       previous_seats = @seats.flatten
-      iterate()
+      iterate(seat_finding_strategy)
       has_stabilised = (previous_seats - @seats.flatten).empty?
     end
   end
@@ -57,8 +56,8 @@ class Seat
     @occupied
   end
 
-  def iterate(plane)
-    occupied_adjacent_seats = adjacent_seats(plane).count { |s| s.occupied? }
+  def iterate(plane, seat_finding_strategy)
+    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(row: @row, column: @column).count { |s| s.occupied? }
 
     should_empty_seat = self.occupied? && occupied_adjacent_seats >= 4
     should_occupy_seat = !self.occupied? && occupied_adjacent_seats == 0
@@ -73,23 +72,6 @@ class Seat
 
     return self
   end
-
-  private
-
-  def adjacent_seats(plane)
-    seat_top_left = plane.seat_at(row_number: @row + 1, column_number: @column  - 1)
-    seat_top = plane.seat_at(row_number: @row + 1, column_number: @column)
-    seat_top_right = plane.seat_at(row_number: @row + 1, column_number: @column  + 1)
-
-    seat_to_left = plane.seat_at(row_number: @row, column_number: @column  - 1)
-    seat_to_right = plane.seat_at(row_number: @row, column_number: @column  + 1)
-
-    seat_behind_left = plane.seat_at(row_number: @row - 1, column_number: @column  - 1)
-    seat_behind = plane.seat_at(row_number: @row - 1, column_number: @column)
-    seat_behind_right = plane.seat_at(row_number: @row - 1, column_number: @column + 1)
-
-    return [seat_top_left, seat_top, seat_top_right, seat_to_left, seat_to_right, seat_behind_left, seat_behind, seat_behind_right].compact
-  end
 end
 
 class Floor 
@@ -102,7 +84,28 @@ class Floor
     false
   end
 
-  def iterate(plane)
+  def iterate(plane, seat_finding_strategy)
     return self
+  end
+end
+
+class ImmediateSeatFindingStrategy
+  def initialize(ferry)
+    @ferry = ferry
+  end
+
+  def find_adjacent_seats(row:, column:)
+    seat_top_left = @ferry.seat_at(row_number: row - 1, column_number: column - 1)
+    seat_top = @ferry.seat_at(row_number: row - 1, column_number: column)
+    seat_top_right = @ferry.seat_at(row_number: row - 1, column_number: column + 1)
+
+    seat_to_left = @ferry.seat_at(row_number: row, column_number: column - 1)
+    seat_to_right = @ferry.seat_at(row_number: row, column_number: column + 1)
+
+    seat_behind_left = @ferry.seat_at(row_number: row + 1, column_number: column - 1)
+    seat_behind = @ferry.seat_at(row_number: row + 1, column_number: column)
+    seat_behind_right = @ferry.seat_at(row_number: row + 1, column_number: column + 1)
+
+    return [seat_top_left, seat_top, seat_top_right, seat_to_left, seat_to_right, seat_behind_left, seat_behind, seat_behind_right].compact
   end
 end

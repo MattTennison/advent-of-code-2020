@@ -74,14 +74,14 @@ RSpec.describe Ferry do
           #.#####.##"
         
         ferry = Ferry.new(input)
-        ferry.iterate()
+        ferry.iterate(ImmediateSeatFindingStrategy.new(ferry))
 
         expect(ferry.seat_at(row_number: 4, column_number: 4).occupied?).to equal(true)
       end
 
       it "should change an occupied seat with 4 adjacent occupied seats to an empty seat" do
         ferry = Ferry.new(input)
-        ferry.iterate()
+        ferry.iterate(ImmediateSeatFindingStrategy.new(ferry))
 
         expect(ferry.seat_at(row_number: 1, column_number: 4).occupied?).to equal(false)
       end
@@ -90,7 +90,7 @@ RSpec.describe Ferry do
     describe "#stabilise" do
       it "should stabilise on 37 occupied seats for sample input" do
         ferry = Ferry.new(input)
-        ferry.stabilise()
+        ferry.stabilise(ImmediateSeatFindingStrategy.new(ferry))
 
         expect(ferry.occupied).to equal(37)
       end
