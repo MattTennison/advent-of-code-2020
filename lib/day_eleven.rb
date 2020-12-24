@@ -46,6 +46,8 @@ class Ferry
 end
 
 class Seat
+  attr_accessor :row
+  attr_accessor :column
   attr_accessor :occupied
   alias_method :occupied?, :occupied
 
@@ -56,7 +58,7 @@ class Seat
   end
 
   def iterate(seat_finding_strategy, seating_rules)
-    matching_rule = seating_rules.find {|r| r.matches?(seat_finding_strategy, row: @row, column: @column, occupied: @occupied)}
+    matching_rule = seating_rules.find {|r| r.matches?(seat_finding_strategy, self)}
     return self if matching_rule == nil
 
     return Seat.new(@row, @column, matching_rule.new_seat_occupuncy)
@@ -64,6 +66,8 @@ class Seat
 end
 
 class Floor
+  attr_accessor :row
+  attr_accessor :column
   attr_accessor :occupied
   alias_method :occupied?, :occupied
 
@@ -83,7 +87,10 @@ class ImmediateSeatFindingStrategy
     @ferry = ferry
   end
 
-  def find_adjacent_seats(row:, column:)
+  def find_adjacent_seats(seat)
+    row = seat.row
+    column = seat.column
+
     seat_top_left = @ferry.seat_at(row_number: row - 1, column_number: column - 1)
     seat_top = @ferry.seat_at(row_number: row - 1, column_number: column)
     seat_top_right = @ferry.seat_at(row_number: row - 1, column_number: column + 1)
@@ -104,7 +111,10 @@ class VisibleSeatFindingStrategy
     @ferry = ferry
   end
 
-  def find_adjacent_seats(row:, column:)
+  def find_adjacent_seats(seat)
+    row = seat.row
+    column = seat.column
+
     seat_top_left = find_seat(row: row, row_delta: -1, column: column, column_delta: -1)
     seat_top = find_seat(row: row, row_delta: -1, column: column, column_delta: 0)
     seat_top_right = find_seat(row: row, row_delta: -1, column: column, column_delta: 1)
@@ -139,9 +149,9 @@ class TooCrowdedSeatingRule
     @occupied_seat_limit = occupied_seat_limit
   end
 
-  def matches?(seat_finding_strategy, row:, column:, occupied:)
-    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(row: row, column: column).count { |s| s.occupied? }
-    return occupied && occupied_adjacent_seats > @occupied_seat_limit
+  def matches?(seat_finding_strategy, seat)
+    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(seat).count { |s| s.occupied? }
+    return seat.occupied && occupied_adjacent_seats > @occupied_seat_limit
   end
 
   def new_seat_occupuncy
@@ -150,9 +160,9 @@ class TooCrowdedSeatingRule
 end
 
 class SpaciousSeatingRule
-  def matches?(seat_finding_strategy, row:, column:, occupied:)
-    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(row: row, column: column).count { |s| s.occupied? }
-    return !occupied && occupied_adjacent_seats == 0
+  def matches?(seat_finding_strategy, seat)
+    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(seat).count { |s| s.occupied? }
+    return !seat.occupied && occupied_adjacent_seats == 0
   end
 
   def new_seat_occupuncy
