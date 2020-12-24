@@ -46,14 +46,13 @@ class Ferry
 end
 
 class Seat
+  attr_accessor :occupied
+  alias_method :occupied?, :occupied
+
   def initialize(row, column, occupied)
     @row = row
     @column = column
     @occupied = occupied
-  end
-
-  def occupied?
-    @occupied
   end
 
   def iterate(seat_finding_strategy, seating_rules)
@@ -64,14 +63,14 @@ class Seat
   end
 end
 
-class Floor 
+class Floor
+  attr_accessor :occupied
+  alias_method :occupied?, :occupied
+
   def initialize(row, column)
     @row = row
     @column = column
-  end
-
-  def occupied?
-    false
+    @occupied = false
   end
 
   def iterate(plane, seat_finding_strategy)
