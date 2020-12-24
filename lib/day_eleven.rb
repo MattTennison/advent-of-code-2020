@@ -14,18 +14,18 @@ class Ferry
     end
   end
 
-  def iterate(seat_finding_strategy)
+  def iterate(seat_finding_strategy, seating_rules = [TooCrowdedSeatingRule.new, SpaciousSeatingRule.new])
     @seats = @seats.map do |row|
-      row.map { |s| s.iterate(self, seat_finding_strategy) }
+      row.map { |s| s.iterate(seat_finding_strategy, seating_rules) }
     end
   end
 
-  def stabilise(seat_finding_strategy)
+  def stabilise(seat_finding_strategy, seating_rules = [TooCrowdedSeatingRule.new, SpaciousSeatingRule.new])
     has_stabilised = false
     
     while (!has_stabilised)
       previous_seats = @seats.flatten
-      iterate(seat_finding_strategy)
+      iterate(seat_finding_strategy, seating_rules)
       has_stabilised = (previous_seats - @seats.flatten).empty?
     end
   end
@@ -56,21 +56,11 @@ class Seat
     @occupied
   end
 
-  def iterate(plane, seat_finding_strategy)
-    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(row: @row, column: @column).count { |s| s.occupied? }
+  def iterate(seat_finding_strategy, seating_rules)
+    matching_rule = seating_rules.find {|r| r.matches?(seat_finding_strategy, row: @row, column: @column, occupied: @occupied)}
+    return self if matching_rule == nil
 
-    should_empty_seat = self.occupied? && occupied_adjacent_seats >= 4
-    should_occupy_seat = !self.occupied? && occupied_adjacent_seats == 0
-    
-    if (should_empty_seat)
-      return Seat.new(@row, @column, false)
-    end
-
-    if (should_occupy_seat)
-      return Seat.new(@row, @column, true)
-    end
-
-    return self
+    return Seat.new(@row, @column, matching_rule.new_seat_occupuncy)
   end
 end
 
@@ -107,5 +97,66 @@ class ImmediateSeatFindingStrategy
     seat_behind_right = @ferry.seat_at(row_number: row + 1, column_number: column + 1)
 
     return [seat_top_left, seat_top, seat_top_right, seat_to_left, seat_to_right, seat_behind_left, seat_behind, seat_behind_right].compact
+  end
+end
+
+class VisibleSeatFindingStrategy
+  def initialize(ferry)
+    @ferry = ferry
+  end
+
+  def find_adjacent_seats(row:, column:)
+    seat_top_left = find_seat(row: row, row_delta: -1, column: column, column_delta: -1)
+    seat_top = find_seat(row: row, row_delta: -1, column: column, column_delta: 0)
+    seat_top_right = find_seat(row: row, row_delta: -1, column: column, column_delta: 1)
+
+    seat_to_left = find_seat(row: row, row_delta: 0, column: column, column_delta: -1)
+    seat_to_right = find_seat(row: row, row_delta: 0, column: column, column_delta: 1)
+
+    seat_behind_left = find_seat(row: row, row_delta: 1, column: column, column_delta: -1)
+    seat_behind = find_seat(row: row, row_delta: 1, column: column, column_delta: 0)
+    seat_behind_right = find_seat(row: row, row_delta: 1, column: column, column_delta: 1)
+
+    return [seat_top_left, seat_top, seat_top_right, seat_to_left, seat_to_right, seat_behind_left, seat_behind, seat_behind_right].compact
+  end
+
+  private
+
+  def find_seat(row:, row_delta:, column:, column_delta:)
+    target_row = row + row_delta
+    target_column = column + column_delta
+    seat = @ferry.seat_at(row_number: target_row, column_number: target_column)
+
+    if (seat.is_a?(Seat) || seat.eql?(nil))
+      return seat
+    end
+
+    return self.find_seat(row: target_row, row_delta: row_delta, column: target_column, column_delta: column_delta)
+  end
+end
+
+class TooCrowdedSeatingRule
+  def initialize(occupied_seat_limit = 3)
+    @occupied_seat_limit = occupied_seat_limit
+  end
+
+  def matches?(seat_finding_strategy, row:, column:, occupied:)
+    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(row: row, column: column).count { |s| s.occupied? }
+    return occupied && occupied_adjacent_seats > @occupied_seat_limit
+  end
+
+  def new_seat_occupuncy
+    return false
+  end
+end
+
+class SpaciousSeatingRule
+  def matches?(seat_finding_strategy, row:, column:, occupied:)
+    occupied_adjacent_seats = seat_finding_strategy.find_adjacent_seats(row: row, column: column).count { |s| s.occupied? }
+    return !occupied && occupied_adjacent_seats == 0
+  end
+
+  def new_seat_occupuncy
+    return true
   end
 end
