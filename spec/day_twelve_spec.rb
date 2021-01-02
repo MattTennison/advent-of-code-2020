@@ -29,54 +29,25 @@ RSpec.describe ShipNavigationFactory do
   end
 
   describe "ShipNavigationSystem" do
-    it "navigates the ship to 214E, 72S for the sample input" do
-      instruction_str_arr = ["F10", "N3", "F7", "R90", "F11"]
-      nav_system = ShipNavigationSystem.new(instruction_str_arr)
-
-      ship_position = nav_system.navigate
-
-      expect(ship_position[0]).to equal(214)
-      expect(ship_position[1]).to equal(-72)
+    where(:case_name, :instruction_str_arr, :expected_finishing_position) do
+      [
+        ["provided example", ["F10", "N3", "F7", "R90", "F11"], Vector[214, -72]],
+        ["with a left turn", ["F10", "N3", "F7", "L90", "F11"], Vector[126, 148]],
+        ["with a 180 degree turn", ["E3", "N4", "R180", "F5"], Vector[-65, -25]],
+        ["with a 180 degree left turn", ["E3", "N4", "L180", "F5"], Vector[-65, -25]],
+        ["with a 270 degree turn", ["E3", "N4", "R270", "F5"], Vector[-25, 65]],
+        ["with a 0 degree turn", ["F10", "N3", "F7", "R90", "R0", "F11"], Vector[214, -72]]
+      ]
     end
 
-    it "handles left turns" do
-      instruction_str_arr = ["F10", "N3", "F7", "L90", "F11"]
-      nav_system = ShipNavigationSystem.new(instruction_str_arr)
+    with_them do
+      it "#navigates" do
+        nav_system = ShipNavigationSystem.new(instruction_str_arr)
 
-      ship_position = nav_system.navigate
-
-      expect(ship_position[0]).to equal(126)
-      expect(ship_position[1]).to equal(148)
-    end
-
-    it "handles 180 degree turns" do
-      instruction_str_arr = ["E3", "N4", "R180", "F5"] # (X: -13, Y: -5) * 5
-      nav_system = ShipNavigationSystem.new(instruction_str_arr)
-
-      ship_position = nav_system.navigate
-
-      expect(ship_position[0]).to equal(-13 * 5)
-      expect(ship_position[1]).to equal(-5 * 5)
-    end
-
-    it "handles 270 degree turns" do
-      instruction_str_arr = ["E3", "N4", "R270", "F5"] # (X: 13, Y: 5) R270, 
-      nav_system = ShipNavigationSystem.new(instruction_str_arr)
-
-      ship_position = nav_system.navigate
-
-      expect(ship_position[0]).to equal(-5 * 5)
-      expect(ship_position[1]).to equal(13 * 5)
-    end
-
-    it "ignores 0 degree turns" do
-      instruction_str_arr = ["E3", "N4", "R0", "F5"] # (X: 13, Y: 5) R270, 
-      nav_system = ShipNavigationSystem.new(instruction_str_arr)
-
-      ship_position = nav_system.navigate
-
-      expect(ship_position[0]).to equal(13 * 5)
-      expect(ship_position[1]).to equal(5 * 5)
+        new_ship_position = nav_system.navigate
+        
+        expect(new_ship_position).to eq(expected_finishing_position)
+      end
     end
   end
 end
