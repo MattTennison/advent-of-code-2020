@@ -1,95 +1,99 @@
-class FerryNavigationInstructionFactory
+require "matrix"
+
+class ShipNavigationFactory
   def self.from_input(str)
     regex = Regexp.new(/([A-Z])(\d+)/)
     action, value = regex.match(str).captures
     
     case action
     when "N"
-      return VerticalFerryNavigationInstruction.new(value.to_i)
+      return VectorWaypointNavigationInstruction.new(Vector[0, value.to_i])
     when "S"
-      return VerticalFerryNavigationInstruction.new(-value.to_i)
+      return VectorWaypointNavigationInstruction.new(Vector[0, -value.to_i])
     when "E"
-      return HorizontalFerryNavigationInstruction.new(value.to_i)
+      return VectorWaypointNavigationInstruction.new(Vector[value.to_i, 0])
     when "W"
-      return HorizontalFerryNavigationInstruction.new(-value.to_i)
+      return VectorWaypointNavigationInstruction.new(Vector[-value.to_i, 0])
     when "R"
-      return RotationalFerryNavigationInstruction.new(value.to_i)
+      return RotationalWaypointNavigationInstruction.new(value.to_i)
     when "L"
-      return RotationalFerryNavigationInstruction.new(-value.to_i)
+      return RotationalWaypointNavigationInstruction.new(-value.to_i)
     when "F"
-      return ForwardFerryNavigationInstruction.new(value.to_i)
+      return ForwardShipNavigationInstruction.new(value.to_i)
     end
   end
 end
 
-class VerticalFerryNavigationInstruction
-  def initialize(value)
-    @value = value
+class VectorWaypointNavigationInstruction
+  def initialize(vector)
+    @vector = vector
   end
 
-  def translate(ferry_position)
-    return ferry_position.translate(y: ferry_position.y + @value)
-  end
-end
-
-class HorizontalFerryNavigationInstruction
-  def initialize(value)
-    @value = value
-  end
-
-  def translate(ferry_position)
-    return ferry_position.translate(x: ferry_position.x + @value)
+  def apply(ship_position:, waypoint_position:)
+    {
+      ship_position: ship_position,
+      waypoint_position: waypoint_position + @vector
+    }
   end
 end
 
-class RotationalFerryNavigationInstruction
+class RotationalWaypointNavigationInstruction
   def initialize(value)
     @value = value
   end
 
-  def translate(ferry_position)
-    new_degree = (ferry_position.direction_in_degrees_clockwise + @value) % 360
-
-    return ferry_position.translate(direction_in_degrees_clockwise: new_degree)
-  end
-end
-
-class ForwardFerryNavigationInstruction
-  def initialize(value)
-    @value = value
-  end
-
-  def translate(ferry_position)
-    str = action(ferry_position) + @value.to_s
-    instruction = FerryNavigationInstructionFactory.from_input(str)
-
-    instruction.translate(ferry_position)
+  def apply(ship_position:, waypoint_position:)
+    {
+      ship_position: ship_position,
+      waypoint_position: translate(waypoint_position)
+    }
   end
 
   private
 
-  def action(ferry_position)
-    {
-      0 => "N",
-      90 => "E",
-      180 => "S",
-      270 => "W"
-    }[ferry_position.direction_in_degrees_clockwise]
+  def translate(waypoint_position)
+    case @value % 360
+    when 0
+      waypoint_position
+    when 90
+      Matrix.columns([[0, -1], [1, 0]]) * waypoint_position
+    when 180
+      Matrix.columns([[-1, 0], [0, -1]]) * waypoint_position
+    when 270
+      Matrix.columns([[0, 1], [-1, 0]]) * waypoint_position
+    end
   end
 end
 
-class FerryPosition
-  attr_accessor :x
-  attr_accessor :y
-  attr_accessor :direction_in_degrees_clockwise
-
-  def initialize(x:, y:, direction_in_degrees_clockwise:)
-    @x = x
-    @y = y
-    @direction_in_degrees_clockwise = direction_in_degrees_clockwise    
+class ForwardShipNavigationInstruction
+  def initialize(value)
+    @value = value
   end
 
-  def translate(x: @x, y: @y, direction_in_degrees_clockwise: @direction_in_degrees_clockwise)
-    FerryPosition.new(x: x, y: y, direction_in_degrees_clockwise: direction_in_degrees_clockwise)
+  def apply(ship_position:, waypoint_position:)
+    delta = waypoint_position * @value
+    {
+      ship_position: ship_position + delta,
+      waypoint_position: waypoint_position
+    }
+  end
+end
+
+class ShipNavigationSystem
+  def initialize(instruction_str_arr)
+    @instructions = instruction_str_arr.map { |instruction| ShipNavigationFactory.from_input(instruction) }
+  end
+
+  def navigate
+    starting_position = { 
+      ship_position: Vector[0, 0],
+      waypoint_position: Vector[10, 1] 
+    }
+
+    finishing_position = @instructions.reduce(starting_position) do |positions, instruction|
+      instruction.apply(positions)
+    end
+
+    finishing_position[:ship_position]
   end
 end
