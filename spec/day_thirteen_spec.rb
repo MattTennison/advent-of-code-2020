@@ -1,7 +1,7 @@
 require "day_thirteen"
 
-RSpec.describe Bus do
-  describe "Bus" do
+RSpec.describe InServiceBus do
+  describe "InServiceBus" do
     describe "#waiting_time_for_next_departure" do
       where(:id, :timestamp, :expected_next_departure) do
         [
@@ -16,7 +16,7 @@ RSpec.describe Bus do
 
       with_them do
         it "returns the expected next departure" do
-          bus = Bus.new(id)
+          bus = InServiceBus.new(id)
 
           next_departure = bus.waiting_time_for_next_departure(timestamp)
 
@@ -70,6 +70,30 @@ RSpec.describe BusNoteParser do
           part_one_answer = note_parser.part_one_answer
 
           expect(part_one_answer).to equal(expected_answer)
+        end
+      end
+    end
+
+    describe "#part_two_answer" do
+      where(:note, :expected_answer) do
+        [
+          ["939\n7,13,x,x,59,x,31,19", 1068781],
+          ["939\n17,x,13,19", 3417],
+          ["939\n67,7,59,61", 754018],
+          ["939\n67,x,7,59,61", 779210],
+          ["939\n67,7,x,59,61", 1261476],
+          ["939\n1789,37,47,1889", 1202161486]
+        ]
+      end
+
+      with_them do
+        it "returns the right answer" do
+          pending("this is going to be worked on soon")
+          note_parser = BusNoteParser.new(note)
+
+          part_two_answer = note_parser.part_two_answer
+
+          expect(part_two_answer).to equal(expected_answer)
         end
       end
     end
