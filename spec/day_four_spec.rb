@@ -3,7 +3,7 @@
 require 'day_four'
 
 RSpec.describe Passport do
-  describe 'is_valid' do
+  describe 'valid' do
     where(:input, :is_valid) do
       [
         ["ecl:gry pid:860033327 eyr:2020 hcl:#fffffd\nbyr:1937 iyr:2017 cid:147 hgt:183cm", true],
@@ -17,12 +17,12 @@ RSpec.describe Passport do
 
     with_them do
       it "considers the input to be #{params[:is_valid] ? 'valid' : 'invalid'} " do
-        expect(Passport.new(input).is_valid?).to eq(is_valid)
+        expect(Passport.new(input).valid?).to eq(is_valid)
       end
     end
   end
 
-  describe 'is_valid_height' do
+  describe 'valid_height' do
     describe 'valid height values' do
       where(:input) do
         [
@@ -32,7 +32,7 @@ RSpec.describe Passport do
 
       with_them do
         it 'considers them valid values' do
-          expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn pid:760753108 byr:1931\nhgt:#{input}").is_valid_height?).to eq(true)
+          expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn pid:760753108 byr:1931\nhgt:#{input}").valid_height?).to eq(true)
         end
       end
     end
@@ -46,13 +46,13 @@ RSpec.describe Passport do
 
       with_them do
         it 'considers them invalid values' do
-          expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn pid:760753108 byr:1931\nhgt:#{input}").is_valid_height?).to eq(false)
+          expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn pid:760753108 byr:1931\nhgt:#{input}").valid_height?).to eq(false)
         end
       end
     end
   end
 
-  describe 'is_valid_eye_color' do
+  describe 'valid_eye_color' do
     where(:input) do
       [
         ['amb'], ['blu'], ['brn'], ['gry'], ['grn'], ['hzl'], ['oth']
@@ -61,17 +61,17 @@ RSpec.describe Passport do
 
     with_them do
       it 'considers them valid' do
-        expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\npid:760753108 byr:1931\nhgt:176cm ecl:#{input}").is_valid_eye_color?).to eq(true)
+        expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\npid:760753108 byr:1931\nhgt:176cm ecl:#{input}").valid_eye_color?).to eq(true)
       end
     end
 
     it 'considers unknown eye colour values invalid' do
       eye_color = 'foobar'
-      expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\npid:760753108 byr:1931\nhgt:176cm ecl:#{eye_color}").is_valid_eye_color?).to eq(false)
+      expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\npid:760753108 byr:1931\nhgt:176cm ecl:#{eye_color}").valid_eye_color?).to eq(false)
     end
   end
 
-  describe 'is_valid_passport_id' do
+  describe 'valid_passport_id' do
     where(:case_name, :passport_id, :is_valid) do
       [
         ['considers 9-digit numbers valid', '890438234', true],
@@ -84,7 +84,7 @@ RSpec.describe Passport do
 
     with_them do
       it "considers them #{params[:is_valid] ? 'valid' : 'invalid'}" do
-        expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn byr:1931\nhgt:175cm pid:#{passport_id}").is_valid_passport_id?).to eq(is_valid)
+        expect(Passport.new("hcl:#ae17e1 iyr:2013\neyr:2024\necl:brn byr:1931\nhgt:175cm pid:#{passport_id}").valid_passport_id?).to eq(is_valid)
       end
     end
   end
