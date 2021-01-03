@@ -71,28 +71,31 @@ class BusSchedule
 
   def sequential_departure_timestamp
     timestamp = 0
-    matched_buses = @buses.select { |b| b.waiting_time_for_next_departure(timestamp) == @buses.index(b) }
+    list = MatchingBusList.new(@buses)
 
-    increment = matched_buses.reduce(1) {|acc, bus| acc * bus.id}
-
-    unmatched_buses = @buses - matched_buses
-    next_bus_to_match = unmatched_buses.first
-    index_of_next_bus_to_match = @buses.index(next_bus_to_match)
-
-    while (unmatched_buses.count > 0) do
-      timestamp = timestamp + increment     
-      if (next_bus_to_match.departing_at?(timestamp + index_of_next_bus_to_match))
-        unmatched_buses.delete(next_bus_to_match)
-        matched_buses << next_bus_to_match
-        
-        increment = increment * next_bus_to_match.id
-
-        next_bus_to_match = unmatched_buses.first
-        index_of_next_bus_to_match = @buses.index(next_bus_to_match)
-      end
+    while (!list.all_matched?(timestamp)) do
+      timestamp += list.interval(timestamp)
     end
 
     timestamp
+  end
+end
+
+class MatchingBusList
+  def initialize(buses)
+    @buses = buses
+  end
+
+  def matched_buses(timestamp)
+    @buses.select { |b| b.departing_at?(timestamp + @buses.index(b)) }
+  end
+
+  def interval(timestamp)
+    matched_buses(timestamp).reduce(1) { |acc, bus| acc * bus.id }
+  end
+
+  def all_matched?(timestamp)
+    matched_buses(timestamp).count == @buses.count
   end
 end
 

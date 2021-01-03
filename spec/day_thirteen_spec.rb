@@ -131,13 +131,13 @@ RSpec.describe BusNoteParser do
           ["939\n67,7,59,61", 754018],
           ["939\n67,x,7,59,61", 779210],
           ["939\n67,7,x,59,61", 1261476],
-          ["939\n1789,37,47,1889", 1202161486]
+          ["939\n1789,37,47,1889", 1202161486],
+          ["1002618\n19,x,x,x,x,x,x,x,x,41,x,x,x,37,x,x,x,x,x,367,x,x,x,x,x,x,x,x,x,x,x,x,13,x,x,x,17,x,x,x,x,x,x,x,x,x,x,x,29,x,373,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,23", 560214575859998]
         ]
       end
 
       with_them do
         it "returns the right answer" do
-          # pending("this is going to be worked on soon")
           note_parser = BusNoteParser.new(note)
 
           part_two_answer = note_parser.part_two_answer
@@ -148,57 +148,3 @@ RSpec.describe BusNoteParser do
     end
   end
 end
-
-# RSpec.describe ChineseRemainderTheorem do
-#   describe "ChineseRemainderTheorem" do
-#     describe "#find_x" do
-#       where(:a_remainder, :a_modulo, :b_remainder, :b_modulo, :expected_answer) do
-#         [
-#           # [make_input(2, 3), make_input(2, 4), 2],
-#           [2, 3, 1, 5, 11],
-#           [3, 5, 4, 6, 28],
-#           [6, 11, 13, 16, 237],
-#           [9, 21, 19, 25, 744],
-#         ]
-#       end
-
-#       with_them do
-#         it "returns the expected answer" do
-#           theorem = ChineseRemainderTheorem.new
-          
-#           answer = theorem.find_x(
-#             a_remainder: a_remainder,
-#             a_modulo: a_modulo,
-#             b_remainder: b_remainder,
-#             b_modulo: b_modulo
-#           )
-
-#           expect(answer).to equal(expected_answer)
-#         end
-#       end
-#     end
-
-#     describe "#solve" do
-#       where(:a_modulo, :a_remainder, :b_modulo, :expected_answer) do
-#         [
-#           [3, 2, 5, 5],
-#           [5, 1, 2, 6]
-#         ]
-#       end
-
-#       with_them do
-#         it "returns the expected answer" do
-#           theorem = ChineseRemainderTheorem.new
-
-#           answer = theorem.solve(
-#             a_remainder: a_remainder,
-#             a_modulo: a_modulo,
-#             b_modulo: b_modulo
-#           )
-
-#           expect(answer).to equal(expected_answer)
-#         end
-#       end
-#     end
-#   end
-# end
