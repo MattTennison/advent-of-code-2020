@@ -48,8 +48,6 @@ class BusSchedule
   end
 
   def next_bus(timestamp)
-    return nil if @buses.count === 0
-
     @buses
       .reject { |bus| bus.waiting_time_for_next_departure(timestamp).eql?(nil) }
       .sort { |bus_a, bus_b| bus_a.waiting_time_for_next_departure(timestamp) <=> bus_b.waiting_time_for_next_departure(timestamp) }.first
