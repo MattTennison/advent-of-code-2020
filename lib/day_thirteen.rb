@@ -1,34 +1,36 @@
+# frozen_string_literal: true
+
 class Bus
-  def departing_at?(timestamp)
-    raise "should be overridden by subclass"
+  def departing_at?(_timestamp)
+    raise 'should be overridden by subclass'
   end
 
-  def waiting_time_for_next_departure(timestamp)
-    raise "should be overridden by subclass"
+  def waiting_time_for_next_departure(_timestamp)
+    raise 'should be overridden by subclass'
   end
 end
 
 class InServiceBus < Bus
   attr_reader :id
-  
+
   def initialize(id)
     @id = id
   end
-  
+
   def waiting_time_for_next_departure(timestamp)
     minutes_since_last_departure = timestamp % gap_between_departures
-    
+
     return 0 if minutes_since_last_departure === 0
-    
-    return gap_between_departures - minutes_since_last_departure
+
+    gap_between_departures - minutes_since_last_departure
   end
-  
+
   def departing_at?(timestamp)
-    timestamp % gap_between_departures == 0
+    (timestamp % gap_between_departures).zero?
   end
-  
+
   private
-  
+
   def gap_between_departures
     @id
   end
@@ -39,22 +41,20 @@ class OutOfServiceBus < Bus
     1
   end
 
-  def waiting_time_for_next_departure(timestamp)
+  def waiting_time_for_next_departure(_timestamp)
     nil
   end
 
-  def departing_at?(timestamp)
+  def departing_at?(_timestamp)
     true
   end
 end
 
 class BusFactory
   def self.from_input(input_str)
-    if (input_str.eql?("x"))
-      return OutOfServiceBus.new
-    end
+    return OutOfServiceBus.new if input_str.eql?('x')
 
-    return InServiceBus.new(input_str.to_i)
+    InServiceBus.new(input_str.to_i)
   end
 end
 
@@ -66,17 +66,14 @@ class BusSchedule
   def next_bus(timestamp)
     @buses
       .reject { |bus| bus.waiting_time_for_next_departure(timestamp).eql?(nil) }
-      .sort { |bus_a, bus_b| bus_a.waiting_time_for_next_departure(timestamp) <=> bus_b.waiting_time_for_next_departure(timestamp) }
-      .first
+      .min { |bus_a, bus_b| bus_a.waiting_time_for_next_departure(timestamp) <=> bus_b.waiting_time_for_next_departure(timestamp) }
   end
 
   def sequential_departure_timestamp
     timestamp = 0
     list = MatchingBusList.new(@buses)
 
-    while (!list.all_matched?(timestamp)) do
-      timestamp += list.interval(timestamp)
-    end
+    timestamp += list.interval(timestamp) until list.all_matched?(timestamp)
 
     timestamp
   end
@@ -104,7 +101,7 @@ class BusNoteParser
   def initialize(note)
     timestamp, buses_str = note.split("\n")
 
-    buses = buses_str.split(",")
+    buses = buses_str.split(',')
 
     @timestamp = timestamp.to_i
     @bus_schedule = BusSchedule.new(buses)
@@ -114,7 +111,7 @@ class BusNoteParser
     next_bus = @bus_schedule.next_bus(@timestamp)
     waiting_time = next_bus.waiting_time_for_next_departure(@timestamp)
 
-    return next_bus.id * waiting_time
+    next_bus.id * waiting_time
   end
 
   def part_two_answer

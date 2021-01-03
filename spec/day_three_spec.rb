@@ -1,4 +1,6 @@
-require "day_three"
+# frozen_string_literal: true
+
+require 'day_three'
 
 RSpec.describe DayThree do
   describe 'solve' do

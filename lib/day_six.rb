@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Group
   def initialize(input)
     @input = input
@@ -8,7 +10,7 @@ class Group
   end
 
   def unanimous_count
-    decisions_per_person = @input.split("\n").map{|str| str.chars}
+    decisions_per_person = @input.split("\n").map(&:chars)
 
     unanimous_decisions = decisions_per_person.reduce(decisions_per_person[0].to_set) do |acc, person_decision|
       acc & person_decision.to_set

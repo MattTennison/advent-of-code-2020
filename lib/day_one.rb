@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 class DayOne
   def solve(arr)
     lookup = Hash.new(false)
 
-    arr.each {|x| lookup[x] = true }
-    match = arr.find {|x| lookup[2020 - x] }
+    arr.each { |x| lookup[x] = true }
+    match = arr.find { |x| lookup[2020 - x] }
 
-    match == nil ? -1 : match * (2020 - match)
+    match.nil? ? -1 : match * (2020 - match)
   end
 
   def solve_second(arr)

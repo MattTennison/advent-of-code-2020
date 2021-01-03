@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DayTwo
   def solve(arr)
     arr.count do |entry|

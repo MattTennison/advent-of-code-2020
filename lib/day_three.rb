@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class DayThree
   def initialize(input)
     @input = input
@@ -5,7 +7,7 @@ class DayThree
 
   def solve(right_delta_per_turn = 3, down_delta_per_turn = 1)
     grid = @input.split("\n").map do |row|
-      row.chars.map{|char| char.eql?("#")}
+      row.chars.map { |char| char.eql?('#') }
     end
 
     rows_we_hit = grid.each_slice(down_delta_per_turn).map(&:first)

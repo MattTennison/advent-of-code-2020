@@ -1,25 +1,27 @@
-require "matrix"
+# frozen_string_literal: true
+
+require 'matrix'
 
 class ShipNavigationFactory
   def self.from_input(str)
     regex = Regexp.new(/([A-Z])(\d+)/)
     action, value = regex.match(str).captures
-    
+
     case action
-    when "N"
-      return VectorWaypointNavigationInstruction.new(Vector[0, value.to_i])
-    when "S"
-      return VectorWaypointNavigationInstruction.new(Vector[0, -value.to_i])
-    when "E"
-      return VectorWaypointNavigationInstruction.new(Vector[value.to_i, 0])
-    when "W"
-      return VectorWaypointNavigationInstruction.new(Vector[-value.to_i, 0])
-    when "R"
-      return RotationalWaypointNavigationInstruction.new(value.to_i)
-    when "L"
-      return RotationalWaypointNavigationInstruction.new(-value.to_i)
-    when "F"
-      return ForwardShipNavigationInstruction.new(value.to_i)
+    when 'N'
+      VectorWaypointNavigationInstruction.new(Vector[0, value.to_i])
+    when 'S'
+      VectorWaypointNavigationInstruction.new(Vector[0, -value.to_i])
+    when 'E'
+      VectorWaypointNavigationInstruction.new(Vector[value.to_i, 0])
+    when 'W'
+      VectorWaypointNavigationInstruction.new(Vector[-value.to_i, 0])
+    when 'R'
+      RotationalWaypointNavigationInstruction.new(value.to_i)
+    when 'L'
+      RotationalWaypointNavigationInstruction.new(-value.to_i)
+    when 'F'
+      ForwardShipNavigationInstruction.new(value.to_i)
     end
   end
 end
@@ -85,9 +87,9 @@ class ShipNavigationSystem
   end
 
   def navigate
-    starting_position = { 
+    starting_position = {
       ship_position: Vector[0, 0],
-      waypoint_position: Vector[10, 1] 
+      waypoint_position: Vector[10, 1]
     }
 
     finishing_position = @instructions.reduce(starting_position) do |positions, instruction|

@@ -1,7 +1,9 @@
-require "day_six"
+# frozen_string_literal: true
+
+require 'day_six'
 
 RSpec.describe Group do
-  describe "Group" do
+  describe 'Group' do
     where(:group_input, :expected_count, :expected_unanimous_count) do
       [
         ["a\nab\na\nb", 2, 0],
@@ -11,12 +13,12 @@ RSpec.describe Group do
     end
 
     with_them do
-      it "calculates the count correctly" do
+      it 'calculates the count correctly' do
         group = Group.new(group_input)
         expect(group.count).to eq(expected_count)
       end
 
-      it "calculates the unanimous count correctly" do
+      it 'calculates the unanimous count correctly' do
         group = Group.new(group_input)
         expect(group.unanimous_count).to eq(expected_unanimous_count)
       end

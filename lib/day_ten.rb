@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class JoltageAdapterCollection
   def initialize(adapters)
     @adapters = adapters.sort
@@ -8,10 +10,10 @@ class JoltageAdapterCollection
 
     chain = links_in_chain.map do |adapters|
       input_adapter, output_adapter = adapters
-      { :input => input_adapter, :output => output_adapter, :difference_in_jolts => output_adapter - input_adapter }
+      { input: input_adapter, output: output_adapter, difference_in_jolts: output_adapter - input_adapter }
     end
 
-    return chain.any? { |link| link[:difference_in_jolts] > 3 } ? nil : chain
+    chain.any? { |link| link[:difference_in_jolts] > 3 } ? nil : chain
   end
 
   def solve_advent_challenge
@@ -19,7 +21,7 @@ class JoltageAdapterCollection
 
     number_of_three_jolt_differences = chain.count { |link| link[:difference_in_jolts] == 3 }
     number_of_one_jolt_differences = chain.count { |link| link[:difference_in_jolts] == 1 }
-     
+
     add_device(number_of_three_jolt_differences) * add_charging_outlet(number_of_one_jolt_differences)
   end
 
@@ -27,13 +29,10 @@ class JoltageAdapterCollection
     chain = self.chain
     three_jolt_differences = chain.select { |link| link[:difference_in_jolts] == 3 }
 
-    chunks_of_adapters = chain.reduce([[0]]) do |acc, link|
+    chunks_of_adapters = chain.each_with_object([[0]]) do |link, acc|
       acc.last.push(link[:input])
-      if (three_jolt_differences.include?(link))
-        acc.push([])
-      end
-      acc
-    end.reject{ |chunk| chunk.eql?([]) }
+      acc.push([]) if three_jolt_differences.include?(link)
+    end.reject { |chunk| chunk.eql?([]) }
 
     chunks_of_adapters.last.push(chain.last[:output])
 
@@ -45,7 +44,7 @@ class JoltageAdapterCollection
   private
 
   def get_combination(chunk)
-    return [] if !is_valid_steps(chunk)
+    return [] unless is_valid_steps(chunk)
 
     return [chunk.first] if chunk.count == 1
 

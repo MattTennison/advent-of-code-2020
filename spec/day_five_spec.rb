@@ -1,7 +1,9 @@
-require "day_five"
+# frozen_string_literal: true
+
+require 'day_five'
 
 RSpec.describe BoardingPass do
-  describe "BoardingPass" do
+  describe 'BoardingPass' do
     where(:pass, :expected_seat_id) do
       [
         ['FBFBBFFRLR', 357],
@@ -21,16 +23,16 @@ RSpec.describe BoardingPass do
 end
 
 RSpec.describe Flight do
-  describe "Flight" do
+  describe 'Flight' do
     where(:present_passes, :missing_seat_id) do
       [
-        [["FBFBBFFRLR", "FBFBBFFRRR"], 358],
+        [%w[FBFBBFFRLR FBFBBFFRRR], 358]
       ]
     end
 
     with_them do
       it "identifies #{params[:missing_seat_id]} as a missing seat ID" do
-        boarding_passes = present_passes.map{|pass| BoardingPass.new(pass)}
+        boarding_passes = present_passes.map { |pass| BoardingPass.new(pass) }
         flight = Flight.new(boarding_passes)
 
         expect(flight.missing_seat_ids).to include(missing_seat_id)

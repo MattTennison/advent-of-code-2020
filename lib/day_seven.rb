@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class BagFactory
   def initialize(rules)
-    @requirements_per_color = Hash.new
-    @wrappers_per_color = Hash.new()
+    @requirements_per_color = {}
+    @wrappers_per_color = {}
 
     rules.each do |rule|
       @requirements_per_color.store(rule[:color], rule[:inner_contents])
@@ -9,34 +11,29 @@ class BagFactory
 
     rules.each do |rule|
       inner_colors = rule[:inner_contents].to_set
-      
+
       inner_colors.each do |color|
         wrappers = @wrappers_per_color.key?(color) ? @wrappers_per_color[color] : Set.new
         wrappers.add(rule[:color])
         @wrappers_per_color.store(color, wrappers)
       end
     end
-
   end
 
   def get_wrapping_bag_colors(search_color)
     wrappers = @wrappers_per_color[search_color]
-    if (wrappers == nil)
-      return []
-    end
+    return [] if wrappers.nil?
 
     wrappers.reduce(Set.new) do |acc, wrapping_color|
-      acc.merge(self.get_wrapping_bag_colors(wrapping_color))
+      acc.merge(get_wrapping_bag_colors(wrapping_color))
     end.merge(wrappers.to_a)
   end
 
   def number_of_bag_tickets(bag_color)
     requirements = @requirements_per_color[bag_color]
-    if (requirements.eql?([]))
-      return 1
-    end
+    return 1 if requirements.eql?([])
 
-    requirements.sum{|r| self.number_of_bag_tickets(r) } + 1
+    requirements.sum { |r| number_of_bag_tickets(r) } + 1
   end
 end
 
@@ -51,12 +48,16 @@ class BagRules
       bag_color = captures[0]
       inner_contents_str = captures[1]
 
-      inner_contents = inner_contents_str.eql?("no other bags.") ? [] : inner_contents_str.split(",").map do |inner_contents| 
-        captures = inner_contents.match(/(\d+) ([\w\s]+) bag|bags/).captures
-        Array.new(captures[0].to_i, captures[1])
-      end.flatten
+      inner_contents = if inner_contents_str.eql?('no other bags.')
+                         []
+                       else
+                         inner_contents_str.split(',').map do |inner_contents|
+                           captures = inner_contents.match(/(\d+) ([\w\s]+) bag|bags/).captures
+                           Array.new(captures[0].to_i, captures[1])
+                         end.flatten
+                       end
 
-      { :color => bag_color, :inner_contents => inner_contents }
+      { color: bag_color, inner_contents: inner_contents }
     end
 
     BagFactory.new(parsed_rules)

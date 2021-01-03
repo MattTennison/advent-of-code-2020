@@ -1,27 +1,27 @@
+# frozen_string_literal: true
+
 class Command
   def initialize
     @has_ran = false
   end
 
-  def has_ran
-    @has_ran
-  end
+  attr_reader :has_ran
 
   def run(current_accumulator, current_command_position)
     @has_ran = true
-    return execute_command(current_accumulator, current_command_position)
+    execute_command(current_accumulator, current_command_position)
   end
 
-  def execute_command(current_accumulator, current_command_position)
-    raise "execute_command should be overriden in child class"
+  def execute_command(_current_accumulator, _current_command_position)
+    raise 'execute_command should be overriden in child class'
   end
 end
 
 class NoOp < Command
   def execute_command(current_accumulator, current_command_position)
-    { 
-      :accumulator => current_accumulator, 
-      :command_position => current_command_position + 1 
+    {
+      accumulator: current_accumulator,
+      command_position: current_command_position + 1
     }
   end
 end
@@ -32,9 +32,9 @@ class Accumulator < Command
   end
 
   def execute_command(current_accumulator, current_command_position)
-    { 
-      :accumulator => current_accumulator + @accumulator_delta, 
-      :command_position => current_command_position + 1 
+    {
+      accumulator: current_accumulator + @accumulator_delta,
+      command_position: current_command_position + 1
     }
   end
 end
@@ -45,9 +45,9 @@ class Jump < Command
   end
 
   def execute_command(current_accumulator, current_command_position)
-    { 
-      :accumulator => current_accumulator, 
-      :command_position => current_command_position + @jump_delta 
+    {
+      accumulator: current_accumulator,
+      command_position: current_command_position + @jump_delta
     }
   end
 end
@@ -70,20 +70,20 @@ class Boot
     @instructions = instructions
   end
 
-  def execute()
+  def execute
     position = 0
     accumulator = 0
 
-    commands = @instructions.map { |i| i.command }
-    while(next_command(commands, position) != nil && !next_command(commands, position).has_ran)
+    commands = @instructions.map(&:command)
+    while next_command(commands, position) != nil && !next_command(commands, position).has_ran
       command_to_execute = next_command(commands, position)
-      
+
       result = command_to_execute.run(accumulator, position)
       position = result[:command_position]
       accumulator = result[:accumulator]
     end
 
-    { :accumulator => accumulator, :has_terminated => next_command(commands, position) == nil}
+    { accumulator: accumulator, has_terminated: next_command(commands, position).nil? }
   end
 
   def next_command(commands, position)
@@ -97,54 +97,45 @@ class CorruptBootRepair
   end
 
   def valid_instructions
-    initial_result = Boot.new(@instructions).execute()
-    if (initial_result[:has_terminated]) 
-      return @instructions
-    end
+    initial_result = Boot.new(@instructions).execute
+    return @instructions if initial_result[:has_terminated]
 
     swap_instruction = 0
-    swappable_instructions = @instructions.select { |i| i.operation.eql?("jmp") || i.operation.eql?("nop") }
+    swappable_instructions = @instructions.select { |i| i.operation.eql?('jmp') || i.operation.eql?('nop') }
 
-    while (swap_instruction < swappable_instructions.count)
+    while swap_instruction < swappable_instructions.count
       instruction_to_swap = swappable_instructions.at(swap_instruction)
       instructions = @instructions.map do |i|
-        if (i.eql?(instruction_to_swap))
-          new_operation = i.operation.eql?("jmp") ? "nop" : "jmp"
+        if i.eql?(instruction_to_swap)
+          new_operation = i.operation.eql?('jmp') ? 'nop' : 'jmp'
           Instruction.replace_operation(i, new_operation)
         else
           i
         end
       end
 
-      result = Boot.new(instructions).execute()
-      if (result[:has_terminated])
-        return instructions
-      end
-      swap_instruction = swap_instruction + 1
+      result = Boot.new(instructions).execute
+      return instructions if result[:has_terminated]
+
+      swap_instruction += 1
     end
   end
 end
 
 class Instruction
   def initialize(instruction)
-    operation, argument = instruction.split(" ")
+    operation, argument = instruction.split(' ')
     @operation = operation
     @argument = argument.to_i
   end
 
-  def operation
-    @operation
-  end
+  attr_reader :operation, :argument
 
-  def argument
-    @argument
-  end
-
-  def command 
+  def command
     CommandFactory.for(operation, argument)
   end
 
   def self.replace_operation(instruction, new_operation)
-    Instruction.new(new_operation + " " + instruction.argument.to_s)
+    Instruction.new("#{new_operation} #{instruction.argument}")
   end
 end
