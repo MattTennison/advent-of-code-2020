@@ -12,7 +12,7 @@ class DayOne
 
   def solve_second(arr)
     arr.combination(3) do |combos|
-      return combos[0] * combos[1] * combos[2] if combos.sum === 2020
+      return combos[0] * combos[1] * combos[2] if combos.sum == 2020
     end
   end
 end
