@@ -48,6 +48,6 @@ class XmasAlgorithm
                      .compact
                      .first
 
-    !weakness_range.nil? ? input.slice(weakness_range).min + input.slice(weakness_range).max : nil
+    weakness_range.nil? ? nil : input.slice(weakness_range).min + input.slice(weakness_range).max
   end
 end

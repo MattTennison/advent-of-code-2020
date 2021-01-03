@@ -124,7 +124,7 @@ end
 
 class Instruction
   def initialize(instruction)
-    operation, argument = instruction.split(' ')
+    operation, argument = instruction.split
     @operation = operation
     @argument = argument.to_i
   end

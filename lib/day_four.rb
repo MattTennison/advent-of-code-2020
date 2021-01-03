@@ -3,7 +3,7 @@
 class Passport
   def initialize(input)
     # @properties = input.gsub('\n', ' ').split(' ').map{|s| s.split(':')[0]}.to_set
-    @properties = input.gsub('\n', ' ').split(' ').map { |s| s.split(':') }.each_with_object({}) do |prop, hash|
+    @properties = input.gsub('\n', ' ').split.map { |s| s.split(':') }.each_with_object({}) do |prop, hash|
       hash.store(prop[0], prop[1])
     end
   end
