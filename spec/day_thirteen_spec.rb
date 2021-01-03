@@ -24,6 +24,54 @@ RSpec.describe InServiceBus do
         end
       end
     end
+
+    describe "#departing_at?" do
+      where(:id, :timestamp, :expected_answer) do
+        [
+          [5, 10, true],
+          [5, 0, true],
+          [5, 4, false],
+          [5, 7540, true],
+          [3, 3, true],
+          [10, 0, true],
+          [10, 43, false],
+          [754, 0, true],
+          [754, 1508, true]
+        ]
+      end
+
+      with_them do
+        it "returns the expected answer" do
+          bus = InServiceBus.new(id)
+
+          departing_at = bus.departing_at?(timestamp)
+
+          expect(departing_at).to equal(expected_answer)
+        end
+      end
+    end
+  end
+end
+
+RSpec.describe OutOfServiceBus do
+  describe "OutOfServiceBus" do
+    describe "#departing_at?" do
+      where(:timestamp) do
+        [
+          [10], [20], [0], [9000]
+        ]
+      end
+
+      with_them do
+        it "always returns true" do
+          bus = OutOfServiceBus.new
+
+          departing_at = bus.departing_at?(timestamp)
+
+          expect(departing_at).to equal(true)
+        end
+      end
+    end
   end
 end
 
@@ -78,6 +126,7 @@ RSpec.describe BusNoteParser do
       where(:note, :expected_answer) do
         [
           ["939\n7,13,x,x,59,x,31,19", 1068781],
+          ["939\n2,3,5", 8],
           ["939\n17,x,13,19", 3417],
           ["939\n67,7,59,61", 754018],
           ["939\n67,x,7,59,61", 779210],
@@ -88,7 +137,7 @@ RSpec.describe BusNoteParser do
 
       with_them do
         it "returns the right answer" do
-          pending("this is going to be worked on soon")
+          # pending("this is going to be worked on soon")
           note_parser = BusNoteParser.new(note)
 
           part_two_answer = note_parser.part_two_answer
@@ -99,3 +148,57 @@ RSpec.describe BusNoteParser do
     end
   end
 end
+
+# RSpec.describe ChineseRemainderTheorem do
+#   describe "ChineseRemainderTheorem" do
+#     describe "#find_x" do
+#       where(:a_remainder, :a_modulo, :b_remainder, :b_modulo, :expected_answer) do
+#         [
+#           # [make_input(2, 3), make_input(2, 4), 2],
+#           [2, 3, 1, 5, 11],
+#           [3, 5, 4, 6, 28],
+#           [6, 11, 13, 16, 237],
+#           [9, 21, 19, 25, 744],
+#         ]
+#       end
+
+#       with_them do
+#         it "returns the expected answer" do
+#           theorem = ChineseRemainderTheorem.new
+          
+#           answer = theorem.find_x(
+#             a_remainder: a_remainder,
+#             a_modulo: a_modulo,
+#             b_remainder: b_remainder,
+#             b_modulo: b_modulo
+#           )
+
+#           expect(answer).to equal(expected_answer)
+#         end
+#       end
+#     end
+
+#     describe "#solve" do
+#       where(:a_modulo, :a_remainder, :b_modulo, :expected_answer) do
+#         [
+#           [3, 2, 5, 5],
+#           [5, 1, 2, 6]
+#         ]
+#       end
+
+#       with_them do
+#         it "returns the expected answer" do
+#           theorem = ChineseRemainderTheorem.new
+
+#           answer = theorem.solve(
+#             a_remainder: a_remainder,
+#             a_modulo: a_modulo,
+#             b_modulo: b_modulo
+#           )
+
+#           expect(answer).to equal(expected_answer)
+#         end
+#       end
+#     end
+#   end
+# end

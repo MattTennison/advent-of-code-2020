@@ -1,4 +1,8 @@
 class Bus
+  def departing_at?(timestamp)
+    raise "should be overridden by subclass"
+  end
+
   def waiting_time_for_next_departure(timestamp)
     raise "should be overridden by subclass"
   end
@@ -19,6 +23,10 @@ class InServiceBus < Bus
     return gap_between_depatures - minutes_since_last_departure
   end
 
+  def departing_at?(timestamp)
+    timestamp % gap_between_depatures == 0
+  end
+
   private
 
   def gap_between_depatures
@@ -27,8 +35,16 @@ class InServiceBus < Bus
 end
 
 class OutOfServiceBus < Bus
+  def id
+    1
+  end
+
   def waiting_time_for_next_departure(timestamp)
     nil
+  end
+
+  def departing_at?(timestamp)
+    true
   end
 end
 
@@ -52,6 +68,32 @@ class BusSchedule
       .reject { |bus| bus.waiting_time_for_next_departure(timestamp).eql?(nil) }
       .sort { |bus_a, bus_b| bus_a.waiting_time_for_next_departure(timestamp) <=> bus_b.waiting_time_for_next_departure(timestamp) }.first
   end
+
+  def sequential_departure_timestamp
+    timestamp = 0
+    matched_buses = @buses.select { |b| b.waiting_time_for_next_departure(timestamp) == @buses.index(b) }
+
+    increment = matched_buses.reduce(1) {|acc, bus| acc * bus.id}
+
+    unmatched_buses = @buses - matched_buses
+    next_bus_to_match = unmatched_buses.first
+    index_of_next_bus_to_match = @buses.index(next_bus_to_match)
+
+    while (unmatched_buses.count > 0) do
+      timestamp = timestamp + increment     
+      if (next_bus_to_match.departing_at?(timestamp + index_of_next_bus_to_match))
+        unmatched_buses.delete(next_bus_to_match)
+        matched_buses << next_bus_to_match
+        
+        increment = increment * next_bus_to_match.id
+
+        next_bus_to_match = unmatched_buses.first
+        index_of_next_bus_to_match = @buses.index(next_bus_to_match)
+      end
+    end
+
+    timestamp
+  end
 end
 
 class BusNoteParser
@@ -72,6 +114,6 @@ class BusNoteParser
   end
 
   def part_two_answer
-    nil
+    @bus_schedule.sequential_departure_timestamp
   end
 end
