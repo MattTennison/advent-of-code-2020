@@ -24,63 +24,101 @@ end
 
 class Bitmask
   def initialize(mask)
-    @mask = mask.chars.map do |mask_element_str|
-      case mask_element_str
-      when '1'
-        OneMaskElement.new
-      when '0'
-        ZeroMaskElement.new
-      else
-        NullMaskElement.new
-      end
-    end
+    @mask_elements = mask.chars.map { |c| from_mask_char(c) }
   end
 
   def write(number)
     number
       .to_s(2)
-      .rjust(@mask.count, '0')
+      .rjust(@mask_elements.count, '0')
       .chars
       .reverse
       .each_with_index
-      .reduce("") { |acc, (n, index)| @mask.reverse[index].with(n) + acc }
+      .reduce("") { |acc, (n, index)| @mask_elements.reverse[index].with(n) + acc }
       .to_i(2)
+  end
+
+  private
+
+  def from_mask_char(c)
+    factory = Hash.new(NullMaskElement.new)
+    factory['0'] = ZeroMaskElement.new
+    factory['1'] = OneMaskElement.new
+    
+    return factory[c]
   end
 end
 
-# class BitmaskOperation
-#   def initialize(str)
-#     regex = Regexp.new(/mask = ([10X]+)/)
-#     value = regex.match(str).captures[0]
-#     @bitmask = Bitmask.new(value)
-#   end
+class Operation
+  def run(memory_hash:, bitmask:)
+    {
+      :memory_hash => memory_hash,
+      :bitmask => bitmask
+    }
+  end
+end
 
-#   def run(memory_hash:, bitmask)
+class BitmaskOperation < Operation
+  def initialize(bitmask_str)
+    @bitmask_str = bitmask_str
+  end
     
-#   end
-# end
+  def run(memory_hash:, bitmask:)
+    {
+      :memory_hash => memory_hash,
+      :bitmask => Bitmask.new(@bitmask_str)
+    }
+  end
+end
+
+class MemoryOperation < Operation
+  def initialize(memory_index, memory_value)
+    @memory_index = memory_index
+    @memory_value = memory_value
+  end
+    
+  def run(memory_hash:, bitmask:)
+    {
+      :memory_hash => memory_hash.merge({ @memory_index => bitmask.write(@memory_value) }),
+      :bitmask => bitmask
+    }
+  end
+end
 
 class DockingProgram
   def initialize(program_lines)
-    @program_lines = program_lines.split("\n")
+    @operations = program_lines
+      .split("\n")
+      .map { |line| operation_for_line(line) }
   end
 
   def run
-    bitmask = Bitmask.new("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-    memory = @program_lines.reduce(Hash.new) do |memory_hash, line|
-      bitmask_operation_regex = Regexp.new(/mask = ([10X]+)/)
-      memory_operation_regex = Regexp.new(/mem\[(\d+)\] = (\d+)/)
+    starting_state = {
+      :memory_hash => Hash.new,
+      :bitmask => Bitmask.new("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    }
 
-      if (bitmask_operation_regex.match?(line))
-        value = bitmask_operation_regex.match(line).captures[0]
-        bitmask = Bitmask.new(value)
-        memory_hash
-      elsif (memory_operation_regex.match?(line))
-        memory_index, memory_value = memory_operation_regex.match(line).captures
-        memory_hash.merge({ memory_index => bitmask.write(memory_value.to_i) })
-      end
+    @operations
+      .reduce(starting_state) { | state, line| line.run(state) }[:memory_hash]
+      .values
+      .sum
+  end
+
+  private
+
+  def operation_for_line(line)
+    bitmask_operation_regex = Regexp.new(/mask = ([10X]+)/)
+    if (bitmask_operation_regex.match?(line))
+      bitmask_str = bitmask_operation_regex.match(line).captures[0]
+      return BitmaskOperation.new(bitmask_str)
     end
 
-    memory.values.sum
+    memory_operation_regex = Regexp.new(/mem\[(\d+)\] = (\d+)/)
+    if (memory_operation_regex.match?(line))
+      memory_index, memory_value = memory_operation_regex.match(line).captures
+      return MemoryOperation.new(memory_index, memory_value.to_i)
+    end
+    
+    return Operation.new
   end
 end
