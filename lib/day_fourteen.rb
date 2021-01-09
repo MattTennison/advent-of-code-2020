@@ -148,10 +148,10 @@ class MemoryOperationVersionTwo < Operation
 end
 
 class DockingProgram
-  def initialize(program_lines)
+  def initialize(program_lines, bitmask_factory = PartOneBitmaskFactory.new)
     @operations = program_lines
       .split("\n")
-      .map { |line| operation_for_line(line) }
+      .map { |line| operation_for_line(line, bitmask_factory) }
   end
 
   def run
@@ -168,11 +168,10 @@ class DockingProgram
 
   private
 
-  def operation_for_line(line)
+  def operation_for_line(line, bitmask_factory)
     bitmask_operation_regex = Regexp.new(/mask = ([10X]+)/)
     if (bitmask_operation_regex.match?(line))
       bitmask_str = bitmask_operation_regex.match(line).captures[0]
-      bitmask_factory = PartOneBitmaskFactory.new
       bitmask = bitmask_factory.bitmask_for_str(bitmask_str)
       return BitmaskOperation.new(bitmask)
     end
