@@ -24,17 +24,18 @@ end
 
 class Bitmask
   def initialize(mask)
-    @mask_elements = mask.chars.map { |c| from_mask_char(c) }
+    @mask_str = mask
   end
 
   def write(number)
+    mask_elements = @mask_str.chars.map { |c| from_mask_char(c) }
     number
       .to_s(2)
-      .rjust(@mask_elements.count, '0')
+      .rjust(mask_elements.count, '0')
       .chars
       .reverse
       .each_with_index
-      .reduce("") { |acc, (n, index)| @mask_elements.reverse[index].with(n) + acc }
+      .reduce("") { |acc, (n, index)| mask_elements.reverse[index].with(n) + acc }
       .to_i(2)
   end
 
