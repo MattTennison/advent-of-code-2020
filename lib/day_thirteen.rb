@@ -14,13 +14,14 @@ class InServiceBus < Bus
   attr_reader :id
 
   def initialize(id)
+    super()
     @id = id
   end
 
   def waiting_time_for_next_departure(timestamp)
     minutes_since_last_departure = timestamp % gap_between_departures
 
-    return 0 if minutes_since_last_departure === 0
+    return 0 if minutes_since_last_departure.zero?
 
     gap_between_departures - minutes_since_last_departure
   end
@@ -66,7 +67,7 @@ class BusSchedule
   def next_bus(timestamp)
     @buses
       .reject { |bus| bus.waiting_time_for_next_departure(timestamp).eql?(nil) }
-      .min { |bus_a, bus_b| bus_a.waiting_time_for_next_departure(timestamp) <=> bus_b.waiting_time_for_next_departure(timestamp) }
+      .min_by { |bus| bus.waiting_time_for_next_departure(timestamp) }
   end
 
   def sequential_departure_timestamp
