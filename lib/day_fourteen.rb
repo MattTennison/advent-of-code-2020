@@ -20,6 +20,12 @@ class PassthroughMaskElement < MaskElement
   end
 end
 
+class FloatingMaskElement < MaskElement
+  def values(c)
+    [0, 1]
+  end
+end
+
 class PartOneBitmaskFactory
   def bitmask_for_str(str)
     mask_elements = str.chars.map { |c| from_mask_char(c) }
@@ -31,6 +37,23 @@ class PartOneBitmaskFactory
   def from_mask_char(c)
     factory = Hash.new(PassthroughMaskElement.new)
     factory['0'] = ReplacementMaskElement.new('0')
+    factory['1'] = ReplacementMaskElement.new('1')
+    
+    return factory[c]
+  end
+end
+
+class PartTwoBitmaskFactory
+  def bitmask_for_str(str)
+    mask_elements = str.chars.map { |c| from_mask_char(c) }
+    Bitmask.new(mask_elements)
+  end
+
+  private
+
+  def from_mask_char(c)
+    factory = Hash.new(FloatingMaskElement.new)
+    factory['0'] = PassthroughMaskElement.new
     factory['1'] = ReplacementMaskElement.new('1')
     
     return factory[c]

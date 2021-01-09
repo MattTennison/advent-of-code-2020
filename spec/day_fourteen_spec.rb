@@ -37,8 +37,8 @@ RSpec.describe MemoryOperationVersionTwo do
 
       with_them do
         it "overwrites the right memory addresses" do
-          pending("refactoring to get part 1 working first")
-          bitmask = Bitmask.new(bitmask_str)
+          factory = PartTwoBitmaskFactory.new
+          bitmask = factory.bitmask_for_str(bitmask_str)
           starting_memory_hash = Hash.new
           operation = MemoryOperationVersionTwo.new(memory_index: memory_index, memory_value: memory_value)
   
