@@ -102,25 +102,25 @@ class CorruptBootRepair
     initial_result = Boot.new(@instructions).execute
     return @instructions if initial_result[:has_terminated]
 
-    swap_instruction = 0
     swappable_instructions = @instructions.select { |i| i.operation.eql?('jmp') || i.operation.eql?('nop') }
-
-    while swap_instruction < swappable_instructions.count
-      instruction_to_swap = swappable_instructions.at(swap_instruction)
-      instructions = @instructions.map do |i|
-        if i.eql?(instruction_to_swap)
-          new_operation = i.operation.eql?('jmp') ? 'nop' : 'jmp'
-          Instruction.replace_operation(i, new_operation)
-        else
-          i
-        end
-      end
+    swappable_instructions.each do |instruction|
+      instructions = swap_instruction(instructions: @instructions, instruction_to_swap: instruction)
 
       result = Boot.new(instructions).execute
       return instructions if result[:has_terminated]
-
-      swap_instruction += 1
     end
+  end
+
+  private
+
+  def swap_instruction(instructions:, instruction_to_swap:)
+    clone_of_instructions = instructions.clone
+    new_operation = instruction_to_swap.operation.eql?('jmp') ? 'nop' : 'jmp'
+    index_of_instruction = instructions.index(instruction_to_swap)
+
+    clone_of_instructions[index_of_instruction] = Instruction.replace_operation(instruction_to_swap, new_operation)
+
+    clone_of_instructions
   end
 end
 
