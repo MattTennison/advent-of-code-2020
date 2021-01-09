@@ -77,7 +77,9 @@ class Bitmask
       .each_with_index
       .map { |n, index| @mask_elements[index].values(n) }
 
-    floating_values[0].product(*floating_values[1..-1])
+    permutations = floating_values[0].product(*floating_values[1..-1])
+
+    permutations
       .map { |inner_array_of_strings| inner_array_of_strings.join("") }
       .map { |binary_str| binary_str.to_i(2) }
   end
@@ -116,7 +118,7 @@ class BitmaskOperation < Operation
 end
 
 class MemoryOperation < Operation
-  def initialize(memory_index, memory_value)
+  def initialize(memory_index:, memory_value:)
     @memory_index = memory_index
     @memory_value = memory_value
   end
@@ -160,7 +162,7 @@ class PartOneOperationFactory
     memory_operation_regex = Regexp.new(/mem\[(\d+)\] = (\d+)/)
     if (memory_operation_regex.match?(line))
       memory_index, memory_value = memory_operation_regex.match(line).captures
-      return MemoryOperation.new(memory_index, memory_value.to_i)
+      return MemoryOperation.new(memory_index: memory_index.to_i, memory_value: memory_value.to_i)
     end
     
     return Operation.new
@@ -202,8 +204,7 @@ class DockingProgram
 
     hash = @operations
       .reduce(starting_state) { | state, line| line.run(state) }[:memory_hash]
-
-    hash.values
+      .values
       .sum
   end
 end
