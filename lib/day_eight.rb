@@ -28,6 +28,7 @@ end
 
 class Accumulator < Command
   def initialize(accumulator_delta)
+    super()
     @accumulator_delta = accumulator_delta
   end
 
@@ -41,6 +42,7 @@ end
 
 class Jump < Command
   def initialize(jump_delta)
+    super()
     @jump_delta = jump_delta
   end
 
@@ -75,7 +77,7 @@ class Boot
     accumulator = 0
 
     commands = @instructions.map(&:command)
-    while next_command(commands, position) != nil && !next_command(commands, position).has_ran
+    while !next_command(commands, position).nil? && !next_command(commands, position).has_ran
       command_to_execute = next_command(commands, position)
 
       result = command_to_execute.run(accumulator, position)
