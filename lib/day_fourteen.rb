@@ -16,7 +16,7 @@ class OneMaskElement < MaskElement
   end
 end
 
-class NullMaskElement < MaskElement
+class PassthroughMaskElement < MaskElement
   def with(c)
     c
   end
@@ -41,7 +41,7 @@ class Bitmask
   private
 
   def from_mask_char(c)
-    factory = Hash.new(NullMaskElement.new)
+    factory = Hash.new(PassthroughMaskElement.new)
     factory['0'] = ZeroMaskElement.new
     factory['1'] = OneMaskElement.new
     
