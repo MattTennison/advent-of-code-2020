@@ -5,7 +5,7 @@ RSpec.describe Bitmask do
     describe "#singular_value" do
       where(:input, :expected_output) do
         [
-          # [11, 73], pending for refactor
+          [11, 73],
           [101, 101],
           [0, 64]
         ]
@@ -13,7 +13,8 @@ RSpec.describe Bitmask do
 
       with_them do
         it "returns the expected result" do
-          bitmask = Bitmask.new("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X")
+          factory = PartOneBitmaskFactory.new
+          bitmask = factory.bitmask_for_str("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X")
 
           output = bitmask.singular_value(input)
 
@@ -36,6 +37,7 @@ RSpec.describe MemoryOperationVersionTwo do
 
       with_them do
         it "overwrites the right memory addresses" do
+          pending("refactoring to get part 1 working first")
           bitmask = Bitmask.new(bitmask_str)
           starting_memory_hash = Hash.new
           operation = MemoryOperationVersionTwo.new(memory_index: memory_index, memory_value: memory_value)

@@ -1,66 +1,58 @@
 class MaskElement
-  def singular(c)
+  def values(c)
     raise "should be implemented in subclasses"
   end
-
-  def floating_values(c)
-    [self.singular(c)]
-  end
 end
 
-class ZeroMaskElement < MaskElement
-  def singular(c)
-    c
+class ReplacementMaskElement < MaskElement
+  def initialize(replacement_value)
+    @replacement_value = replacement_value
   end
-end
 
-class OneMaskElement < MaskElement
-  def singular(c)
-    '1'
+  def values(c)
+    [@replacement_value]
   end
 end
 
 class PassthroughMaskElement < MaskElement
-  def singular(c)
-    c
-  end
-
-  def floating_values(c)
-    ['0', '1']
+  def values(c)
+    [c]
   end
 end
 
-class FloatingMaskElement < MaskElement
-  def values(c)
-    [0, 1]
+class PartOneBitmaskFactory
+  def bitmask_for_str(str)
+    mask_elements = str.chars.map { |c| from_mask_char(c) }
+    Bitmask.new(mask_elements)
+  end
+
+  private
+
+  def from_mask_char(c)
+    factory = Hash.new(PassthroughMaskElement.new)
+    factory['0'] = ReplacementMaskElement.new('0')
+    factory['1'] = ReplacementMaskElement.new('1')
+    
+    return factory[c]
   end
 end
 
 class Bitmask
-  def initialize(mask)
-    @mask_str = mask
+  def initialize(mask_elements)
+    @mask_elements = mask_elements
   end
 
   def singular_value(number)
-    mask_elements = @mask_str.chars.map { |c| from_mask_char(c) }
-    number
-      .to_s(2)
-      .rjust(mask_elements.count, '0')
-      .chars
-      .reverse
-      .each_with_index
-      .reduce("") { |acc, (n, index)| mask_elements.reverse[index].singular(n) + acc }
-      .to_i(2)
+    self.floating_values(number).first
   end
 
   def floating_values(number)
-    mask_elements = @mask_str.chars.map { |c| from_mask_char(c) }
     floating_values = number
       .to_s(2)
-      .rjust(mask_elements.count, '0')
+      .rjust(@mask_elements.count, '0')
       .chars
       .each_with_index
-      .map { |n, index| mask_elements[index].floating_values(n) }
+      .map { |n, index| @mask_elements[index].values(n) }
 
     floating_values[0].product(*floating_values[1..-1])
       .map { |inner_array_of_strings| inner_array_of_strings.join("") }
@@ -71,8 +63,8 @@ class Bitmask
 
   def from_mask_char(c)
     factory = Hash.new(PassthroughMaskElement.new)
-    factory['0'] = ZeroMaskElement.new
-    factory['1'] = OneMaskElement.new
+    factory['0'] = ReplacementMaskElement.new('0')
+    factory['1'] = ReplacementMaskElement.new('1')
     
     return factory[c]
   end
@@ -88,14 +80,14 @@ class Operation
 end
 
 class BitmaskOperation < Operation
-  def initialize(bitmask_str)
-    @bitmask_str = bitmask_str
+  def initialize(bitmask)
+    @bitmask = bitmask
   end
     
   def run(memory_hash:, bitmask:)
     {
       :memory_hash => memory_hash,
-      :bitmask => Bitmask.new(@bitmask_str)
+      :bitmask => @bitmask
     }
   end
 end
@@ -157,7 +149,9 @@ class DockingProgram
     bitmask_operation_regex = Regexp.new(/mask = ([10X]+)/)
     if (bitmask_operation_regex.match?(line))
       bitmask_str = bitmask_operation_regex.match(line).captures[0]
-      return BitmaskOperation.new(bitmask_str)
+      bitmask_factory = PartOneBitmaskFactory.new
+      bitmask = bitmask_factory.bitmask_for_str(bitmask_str)
+      return BitmaskOperation.new(bitmask)
     end
 
     memory_operation_regex = Regexp.new(/mem\[(\d+)\] = (\d+)/)
