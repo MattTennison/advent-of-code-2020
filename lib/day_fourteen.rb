@@ -22,10 +22,20 @@ class PassthroughMaskElement < MaskElement
   end
 end
 
-class BitmaskFactory
-  def from_string(bitmask_str)
-    mask_elements = bitmask_str.chars.map { |c| from_mask_char(c) }
-    Bitmask.new(mask_elements)
+class Bitmask
+  def initialize(mask)
+    @mask_elements = mask.chars.map { |c| from_mask_char(c) }
+  end
+
+  def write(number)
+    number
+      .to_s(2)
+      .rjust(@mask_elements.count, '0')
+      .chars
+      .reverse
+      .each_with_index
+      .reduce("") { |acc, (n, index)| @mask_elements.reverse[index].with(n) + acc }
+      .to_i(2)
   end
 
   private
@@ -39,23 +49,6 @@ class BitmaskFactory
   end
 end
 
-class Bitmask
-  def initialize(mask_elements)
-    @mask_elements = mask_elements
-  end
-
-  def write(number)
-    number
-      .to_s(2)
-      .rjust(@mask_elements.count, '0')
-      .chars
-      .reverse
-      .each_with_index
-      .reduce("") { |acc, (n, index)| @mask_elements.reverse[index].with(n) + acc }
-      .to_i(2)
-  end
-end
-
 class Operation
   def run(memory_hash:, bitmask:)
     {
@@ -66,14 +59,14 @@ class Operation
 end
 
 class BitmaskOperation < Operation
-  def initialize(bitmask)
-    @bitmask = bitmask
+  def initialize(bitmask_str)
+    @bitmask_str = bitmask_str
   end
     
   def run(memory_hash:, bitmask:)
     {
       :memory_hash => memory_hash,
-      :bitmask => @bitmask
+      :bitmask => Bitmask.new(@bitmask_str)
     }
   end
 end
@@ -117,8 +110,7 @@ class DockingProgram
     bitmask_operation_regex = Regexp.new(/mask = ([10X]+)/)
     if (bitmask_operation_regex.match?(line))
       bitmask_str = bitmask_operation_regex.match(line).captures[0]
-      bitmask = BitmaskFactory.new.from_string(bitmask_str)
-      return BitmaskOperation.new(bitmask)
+      return BitmaskOperation.new(bitmask_str)
     end
 
     memory_operation_regex = Regexp.new(/mem\[(\d+)\] = (\d+)/)

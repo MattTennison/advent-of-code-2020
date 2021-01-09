@@ -13,8 +13,7 @@ RSpec.describe Bitmask do
 
       with_them do
         it "returns the expected result" do
-          factory = BitmaskFactory.new
-          bitmask = factory.from_string("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X")
+          bitmask = Bitmask.new("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X")
 
           output = bitmask.write(input)
 
