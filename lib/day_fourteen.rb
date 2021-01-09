@@ -1,23 +1,23 @@
 class MaskElement
-  def with(c)
+  def singular(c)
     raise "should be implemented in subclasses"
   end
 end
 
 class ZeroMaskElement < MaskElement
-  def with(c)
+  def singular(c)
     '0'
   end
 end
 
 class OneMaskElement < MaskElement
-  def with(c)
+  def singular(c)
     '1'
   end
 end
 
 class PassthroughMaskElement < MaskElement
-  def with(c)
+  def singular(c)
     c
   end
 end
@@ -35,7 +35,7 @@ class Bitmask
       .chars
       .reverse
       .each_with_index
-      .reduce("") { |acc, (n, index)| mask_elements.reverse[index].with(n) + acc }
+      .reduce("") { |acc, (n, index)| mask_elements.reverse[index].singular(n) + acc }
       .to_i(2)
   end
 
