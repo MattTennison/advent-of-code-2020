@@ -56,16 +56,18 @@ end
 
 RSpec.describe DockingProgram do
   describe "DockingProgram" do
-    it "#run" do
-      program = DockingProgram.new("
-mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
-mem[8] = 11
-mem[7] = 101
-mem[8] = 0".strip)
-
-      output = program.run
-
-      expect(output).to equal(165)
+    describe "#run" do
+      it "returns expected answer for part one" do
+        program = DockingProgram.new("
+          mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
+          mem[8] = 11
+          mem[7] = 101
+          mem[8] = 0".strip)
+          
+        output = program.run
+  
+        expect(output).to equal(165)
+      end
     end
   end
 end
