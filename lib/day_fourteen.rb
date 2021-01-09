@@ -2,11 +2,15 @@ class MaskElement
   def singular(c)
     raise "should be implemented in subclasses"
   end
+
+  def floating_values(c)
+    [self.singular(c)]
+  end
 end
 
 class ZeroMaskElement < MaskElement
   def singular(c)
-    '0'
+    c
   end
 end
 
@@ -19,6 +23,16 @@ end
 class PassthroughMaskElement < MaskElement
   def singular(c)
     c
+  end
+
+  def floating_values(c)
+    ['0', '1']
+  end
+end
+
+class FloatingMaskElement < MaskElement
+  def values(c)
+    [0, 1]
   end
 end
 
@@ -37,6 +51,20 @@ class Bitmask
       .each_with_index
       .reduce("") { |acc, (n, index)| mask_elements.reverse[index].singular(n) + acc }
       .to_i(2)
+  end
+
+  def floating_values(number)
+    mask_elements = @mask_str.chars.map { |c| from_mask_char(c) }
+    floating_values = number
+      .to_s(2)
+      .rjust(mask_elements.count, '0')
+      .chars
+      .each_with_index
+      .map { |n, index| mask_elements[index].floating_values(n) }
+
+    floating_values[0].product(*floating_values[1..-1])
+      .map { |inner_array_of_strings| inner_array_of_strings.join("") }
+      .map { |binary_str| binary_str.to_i(2) }
   end
 
   private
@@ -81,6 +109,24 @@ class MemoryOperation < Operation
   def run(memory_hash:, bitmask:)
     {
       :memory_hash => memory_hash.merge({ @memory_index => bitmask.singular_value(@memory_value) }),
+      :bitmask => bitmask
+    }
+  end
+end
+
+class MemoryOperationVersionTwo < Operation
+  def initialize(memory_index:, memory_value:)
+    @memory_index = memory_index
+    @memory_value = memory_value
+  end
+    
+  def run(memory_hash:, bitmask:)
+    memory_addresses_to_overwrite = bitmask.floating_values(@memory_index)
+    new_entries = memory_addresses_to_overwrite.reduce(Hash.new) do |acc, memory_address|
+      acc.merge({ memory_address => @memory_value })
+    end
+    {
+      :memory_hash => memory_hash.merge(new_entries),
       :bitmask => bitmask
     }
   end
