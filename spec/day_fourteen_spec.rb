@@ -2,7 +2,7 @@ require "day_fourteen"
 
 RSpec.describe Bitmask do
   describe "Bitmask" do
-    describe "#write" do
+    describe "#singular_value" do
       where(:input, :expected_output) do
         [
           [11, 73],
@@ -15,7 +15,7 @@ RSpec.describe Bitmask do
         it "returns the expected result" do
           bitmask = Bitmask.new("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X")
 
-          output = bitmask.write(input)
+          output = bitmask.singular_value(input)
 
           expect(output).to equal(expected_output)
         end

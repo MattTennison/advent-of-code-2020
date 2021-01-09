@@ -27,7 +27,7 @@ class Bitmask
     @mask_str = mask
   end
 
-  def write(number)
+  def singular_value(number)
     mask_elements = @mask_str.chars.map { |c| from_mask_char(c) }
     number
       .to_s(2)
@@ -80,7 +80,7 @@ class MemoryOperation < Operation
     
   def run(memory_hash:, bitmask:)
     {
-      :memory_hash => memory_hash.merge({ @memory_index => bitmask.write(@memory_value) }),
+      :memory_hash => memory_hash.merge({ @memory_index => bitmask.singular_value(@memory_value) }),
       :bitmask => bitmask
     }
   end
