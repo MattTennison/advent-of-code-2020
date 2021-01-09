@@ -68,6 +68,18 @@ RSpec.describe DockingProgram do
   
         expect(output).to equal(165)
       end
+
+      it "returns expected answer for part two" do
+        input = "mask = 000000000000000000000000000000X1001X
+        mem[42] = 100
+        mask = 00000000000000000000000000000000X0XX
+        mem[26] = 1".strip
+        program = DockingProgram.new(input, PartTwoOperationFactory.new)
+          
+        output = program.run
+  
+        expect(output).to equal(208)
+      end
     end
   end
 end
