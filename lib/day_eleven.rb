@@ -5,13 +5,7 @@ class Ferry
     rows = input.split("\n")
     @seats = rows.map.with_index do |row, row_number|
       row.strip.chars.map.with_index do |column, column_number|
-        is_seat = column.eql?('#') || column.eql?('L')
-        if is_seat
-          is_occupied = column.eql?('#')
-          Seat.new(row_number, column_number, is_occupied)
-        else
-          Floor.new(row_number, column_number)
-        end
+        seat_for(item: column, column_number: column_number, row_number: row_number)
       end
     end
   end
@@ -43,7 +37,19 @@ class Ferry
 
     return nil if row.eql?(nil)
 
-    column = row[column_number]
+    row[column_number]
+  end
+
+  private
+
+  def seat_for(item:, column_number:, row_number:)
+    is_seat = item.eql?('#') || item.eql?('L')
+    if is_seat
+      is_occupied = item.eql?('#')
+      Seat.new(row_number, column_number, is_occupied)
+    else
+      Floor.new(row_number, column_number)
+    end
   end
 end
 
