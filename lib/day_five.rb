@@ -15,7 +15,7 @@ class BoardingPass
 
   def row
     row_data_in_pass = @pass.slice(0, 7)
-    row = row_data_in_pass.chars.reduce(Range.new(0, 127)) do |acc, character|
+    row_data_in_pass.chars.reduce(Range.new(0, 127)) do |acc, character|
       mid_point = acc.min + (acc.size / 2)
       character.eql?('F') ? Range.new(acc.min, mid_point - 1) : Range.new(mid_point, acc.max)
     end.first
@@ -23,7 +23,7 @@ class BoardingPass
 
   def seat
     seat_data_in_pass = @pass.slice(7, 3)
-    seat = seat_data_in_pass.chars.reduce(Range.new(0, 7)) do |acc, character|
+    seat_data_in_pass.chars.reduce(Range.new(0, 7)) do |acc, character|
       mid_point = acc.min + (acc.size / 2)
       character.eql?('L') ? Range.new(acc.min, mid_point - 1) : Range.new(mid_point, acc.max)
     end.first
@@ -38,7 +38,7 @@ class Flight
   def missing_seat_ids
     max_row = 127
     max_seat = 8
-    max_seat_id = 127 * 8 + 8
+    max_seat_id = max_row * max_seat + max_seat
 
     Set.new(1...max_seat_id) - @boarding_passes.map(&:seat_id)
   end
