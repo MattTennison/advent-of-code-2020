@@ -139,9 +139,8 @@ class MemoryOperationVersionTwo < Operation
     
   def run(memory_hash:, bitmask:)
     memory_addresses_to_overwrite = bitmask.floating_values(@memory_index)
-    new_entries = memory_addresses_to_overwrite.reduce(Hash.new) do |acc, memory_address|
-      acc.merge({ memory_address => @memory_value })
-    end
+    new_entries = memory_addresses_to_overwrite.to_h {|address| [address, @memory_value]}
+    
     {
       :memory_hash => memory_hash.merge(new_entries),
       :bitmask => bitmask
