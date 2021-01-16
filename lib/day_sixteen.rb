@@ -19,6 +19,16 @@ class Ticket
   def invalid_values(rules)
     @values.select { |value| rules.none? { |r| r.valid?(value) } }
   end
+
+  def valid?(rules)
+    if (rules.count != @values.count)
+      return false
+    end
+
+    result = true
+    @values.each_with_index { |value, index| result = result && rules[index].valid?(value) }
+    result
+  end
 end
 
 class TicketScanner

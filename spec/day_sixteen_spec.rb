@@ -72,6 +72,30 @@ RSpec.describe TicketRule do
         expect(result).to eq([105])
       end
     end
+
+    describe "#valid?" do
+      single_digit_rule = TicketRule.new([(1..9)], "single digit")
+      twenty_to_fourty_rule = TicketRule.new([(20..40)], "twenty to fourty")
+
+      where(:case_name, :ticket_values, :rules, :expected_result) do
+        [
+          ["returns false if there are more values than rules", [13, 20, 40, 5], [single_digit_rule], false],
+          ["returns false if there are less values than rules", [1], [single_digit_rule, twenty_to_fourty_rule], false],
+          ["returns true if each value matches the corrosponding rule", [8, 24], [single_digit_rule, twenty_to_fourty_rule], true],
+          ["returns false if values do not match their corrosponding rule but do match other rules", [24, 8], [single_digit_rule, twenty_to_fourty_rule], false]
+        ]
+      end
+
+      with_them do
+        it "returns the expected result" do
+          ticket = Ticket.new(ticket_values)
+    
+          result = ticket.valid?(rules)
+    
+          expect(result).to eq(expected_result)
+        end
+      end
+    end
   end
 
   describe "TicketScanner" do
