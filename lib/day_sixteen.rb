@@ -31,6 +31,11 @@ class TicketScanner
       .map { |ticket| ticket.invalid_values(@rule_list) }
       .flatten
   end
+
+  def valid_tickets(tickets)
+    tickets
+      .select { |ticket| ticket.invalid_values(@rule_list).empty? }
+  end
 end
 
 class DaySixteen

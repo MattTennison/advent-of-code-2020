@@ -90,6 +90,20 @@ RSpec.describe TicketRule do
         expect(result).to match_array([11, 13])
       end
     end
+
+    describe "#valid_tickets" do
+      it "returns all tickets that have values matching at least one rule" do
+        single_digit_rule = TicketRule.new([(1..9)], "single digit")
+        twenty_to_fourty_rule = TicketRule.new([(20..40)], "twenty to fourty")
+        scanner = TicketScanner.new([single_digit_rule, twenty_to_fourty_rule])
+        valid_ticket = Ticket.new([20, 40, 5]);
+        invalid_ticket = Ticket.new([6, 11, 21, 34])
+
+        result = scanner.valid_tickets([valid_ticket, invalid_ticket])
+
+        expect(result).to match_array([valid_ticket])
+      end
+    end
   end
 end
 
