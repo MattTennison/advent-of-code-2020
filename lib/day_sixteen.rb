@@ -1,6 +1,9 @@
 class TicketRule
-  def initialize(valid_ranges)
+  attr_reader :name
+
+  def initialize(valid_ranges, name)
     @ranges = valid_ranges
+    @name = name
   end
 
   def valid?(number)
@@ -42,15 +45,16 @@ class DaySixteen
   private
 
   def rules
-    rule_regex = Regexp.new(/\w+: (\d+)-(\d+) or (\d+)-(\d+)/)
+    rule_regex = Regexp.new(/(\w+): (\d+)-(\d+) or (\d+)-(\d+)/)
     ranges = @input.scan(rule_regex).map do |matchdata|
-      first_rule_start, first_rule_end = matchdata.values_at(0, 1)
-      second_rule_start, second_rule_end = matchdata.values_at(2, 3)
+      name = matchdata[0]
+      first_rule_start, first_rule_end = matchdata.values_at(1, 2)
+      second_rule_start, second_rule_end = matchdata.values_at(3, 4)
 
       TicketRule.new([
         Range.new(first_rule_start.to_i, first_rule_end.to_i),
         Range.new(second_rule_start.to_i, second_rule_end.to_i)
-      ])
+      ], name)
     end
   end
 

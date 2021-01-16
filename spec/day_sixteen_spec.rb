@@ -4,7 +4,7 @@ RSpec.describe TicketRule do
   describe "TicketRule" do
     describe "#valid?" do
       it "considers a value in the middle of a range valid" do
-        rule = TicketRule.new([(1..5)])
+        rule = TicketRule.new([(1..5)], "example")
 
         result = rule.valid?(3)
 
@@ -12,7 +12,7 @@ RSpec.describe TicketRule do
       end
 
       it "considers a value outside the range invalid" do
-        rule = TicketRule.new([(1..5)])
+        rule = TicketRule.new([(1..5)], "example")
 
         result = rule.valid?(8)
 
@@ -20,7 +20,7 @@ RSpec.describe TicketRule do
       end
 
       it "considers a value in the middle of one of several ranges to be valid" do
-        rule = TicketRule.new([(1..5), (7..10)])
+        rule = TicketRule.new([(1..5), (7..10)], "example")
 
         result = rule.valid?(8)
 
@@ -28,7 +28,7 @@ RSpec.describe TicketRule do
       end
 
       it "considers a value in the middle of two overlapping ranges to be valid" do
-        rule = TicketRule.new([(1..5), (3..10)])
+        rule = TicketRule.new([(1..5), (3..10)], "example")
 
         result = rule.valid?(4)
 
@@ -50,7 +50,7 @@ RSpec.describe TicketRule do
       end
 
       it "returns no values when ticket rules cover all values" do
-        rules = [TicketRule.new([(101..103)])]
+        rules = [TicketRule.new([(101..103)], "departure")]
         values = [101, 102, 103]
         ticket = Ticket.new(values)
 
@@ -60,7 +60,10 @@ RSpec.describe TicketRule do
       end
 
       it "returns invalid values where no ticket rule covers the value" do
-        rules = [TicketRule.new([(101..103)]), TicketRule.new([(107..109)])]
+        rules = [
+          TicketRule.new([(101..103)], "departure"), 
+          TicketRule.new([(107..109)], "platform")
+        ]
         values = [101, 105, 109]
         ticket = Ticket.new(values)
 
@@ -72,18 +75,20 @@ RSpec.describe TicketRule do
   end
 
   describe "TicketScanner" do
-    it "returns all the invalid values for all the invalid tickets" do
-      single_digit_rule = TicketRule.new([(1..9)])
-      twenty_to_fourty_rule = TicketRule.new([(20..40)])
-      scanner = TicketScanner.new([single_digit_rule, twenty_to_fourty_rule])
-      tickets = [
-        Ticket.new([13, 20, 40, 5]),
-        Ticket.new([6, 11, 21, 34])
-      ]
+    describe "#invalid_values" do
+      it "returns all the invalid values for all the invalid tickets" do
+        single_digit_rule = TicketRule.new([(1..9)], "single digit")
+        twenty_to_fourty_rule = TicketRule.new([(20..40)], "twenty to fourty")
+        scanner = TicketScanner.new([single_digit_rule, twenty_to_fourty_rule])
+        tickets = [
+          Ticket.new([13, 20, 40, 5]),
+          Ticket.new([6, 11, 21, 34])
+        ]
 
-      result = scanner.invalid_values(tickets)
+        result = scanner.invalid_values(tickets)
 
-      expect(result).to match_array([11, 13])
+        expect(result).to match_array([11, 13])
+      end
     end
   end
 end
