@@ -29,6 +29,10 @@ class Ticket
     @values.each_with_index { |value, index| result = result && rules[index].valid?(value) }
     result
   end
+
+  def value_at(index)
+    @values[index]
+  end
 end
 
 class TicketScanner
@@ -48,6 +52,49 @@ class TicketScanner
   end
 end
 
+class TicketRuleOrderAlgorithm
+  def find_correct_order(tickets, rule_set)
+    valid_tickets = tickets.select { |ticket| ticket.invalid_values(rule_set).empty? }
+
+    order_options = starting_order_options(tickets, rule_set)
+
+    valid_tickets.each do |ticket|
+      order_options = valid_order_options_for_ticket(ticket, order_options)
+    end
+
+    order_options
+    
+    # rules = order_options.flatten
+    # rules.map { |r| r.name }
+  end
+
+  private
+
+  def starting_order_options(tickets, rule_set)
+    rule_options = []
+    (0..rule_set.count - 1).each do |index|
+      max = tickets.max { |ticket| ticket.value_at(index) }.value_at(index)
+      min = tickets.min { |ticket| ticket.value_at(index) }.value_at(index)
+
+      rule_options.push(rule_set.select { |rule| rule.valid?(max) && rule.valid?(min) })
+    end
+
+    rule_options
+  end
+
+  def valid_order_options_for_ticket(ticket, order_options)
+    options = order_options.map.with_index do |rule_list, index|
+      rule_list.select  { |rule| rule.valid?(ticket.value_at(index)) }
+    end
+
+    identified_rule = options.select { |o| o.count == 1 }.flatten
+
+    options.map do |option|
+      option.count == 1 ? option : option.reject { |o| identified_rule.include?(o) }
+    end
+  end
+end
+
 class DaySixteen
   def initialize(puzzle_input)
     @input = puzzle_input
@@ -55,6 +102,12 @@ class DaySixteen
 
   def ticket_scanning_error_rate
     TicketScanner.new(rules).invalid_values(tickets).sum
+  end
+
+  def rule_order
+    TicketRuleOrderAlgorithm.new.find_correct_order(tickets, rules.to_set).map do |rules|
+      rules[0].name
+    end
   end
 
   private

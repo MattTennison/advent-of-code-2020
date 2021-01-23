@@ -153,4 +153,26 @@ describe "DaySixteen" do
       expect(result).to eq(71)
     end
   end
+
+  describe "#rule_order" do
+    it "returns row, class, seat for sample input" do
+      input = "class: 0-1 or 4-19
+        row: 0-5 or 8-19
+        seat: 0-13 or 16-19
+        
+        your ticket:
+        11,12,13
+        
+        nearby tickets:
+        3,9,18
+        15,1,5
+        5,14,9"
+  
+        day_sixteen = DaySixteen.new(input)
+  
+        result = day_sixteen.rule_order
+  
+        expect(result).to eq(["row", "class", "seat"])
+    end
+  end
 end
